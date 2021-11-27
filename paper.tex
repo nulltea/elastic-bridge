@@ -28,7 +28,7 @@ Frameworks like Parity's Substrate\footnote{\url{https://docs.substrate.io}} and
 
 \subsection{Cross-chain Bridges}
 
-Effectively improved on scalability by shading on-chain data and parallelising transaction execution, we encountered new challenges with cross-chain interoperability. Many newborn ecosystems, all with unique features and value propositions, found themselves near of Tower of Babel\footnote{Myth} --- unable to communicate and effectively cooperate to provide meaningful services together.
+Effectively improved on scalability by sharding on-chain data and parallelising transaction execution, we encountered new challenges with cross-chain interoperability. Many newborn ecosystems, all with unique features and value propositions, found themselves near of Tower of Babel\footnote{Myth} --- unable to communicate and effectively cooperate to provide meaningful services together.
 
 The natural reaction was a development of cross-chain bridges --- protocols that allow two (or more) exogenous chains to share state by the means of inter-chain transaction passing. We have seen various implementations of these protocols ranging from trusted federations to truly trust-less decentralized Relayed SPV solutions like the IBC Protocol \cite{goes2020ibc}.
 
@@ -36,7 +36,19 @@ The natural reaction was a development of cross-chain bridges --- protocols that
 
 Meanwhile, cryptocurrencies --- the original use case of the Distributed Ledger Technology (DLT), also do not show any signs of innovation slowdown. Projects like Stellar \cite{mazieres2016stellar} commit to building a foundation for transferring digital currency to fiat money across borders. Controversial privacy-oriented currencies like Monero \cite{saberhagen2013monero} allow completely untraceable payments. Finally, fiat-pegged tokens like Tether \cite{tether2016} and multi-collateralized stablecoins like MakerDAO's Dai \cite{makerdao2020dai} has been one of many attempts to tackle price-volatility --- issue often synonymous with digital currencies.
 
-Rebasing --- a novel technique applied for synthetic commodities for achieving practical price stability by algorithmically adjusting circulating amount of tokens, thus translating price-volatility into supply-volatility.
+Rebasing --- a novel technique applied for synthetic commodities for achieving practical price stability by algorithmically adjusting circulating tokens amount, thus translating price-volatility into supply-volatility. Rebase tokens (or price-elastic tokens) demonstrated low correlation not only with stocks, fiat currencies, and precious metals, but with other cryptocurrencies, most notably with Bitcoin.
+
+While low correlation aspect attracts investors seeking to diversify their portfolios, unique volatility pattern of rebase currencies makes them valuable building block\footnote{\url{https://www.ampleforth.org/economics}} for DeFi as well. For example, the longest-running algorithmic stablecoins based rebasing --- Ampleforth \cite{kuo2019ampleforth} constructs its protocol with dependance on fast actors who benefit from short term trades. By leveraging time windows after rebasing to make lucrative trades, these actors propagate adjustments of supply made by protocol back into the price.
+
+\subsection{Considerations taken}
+
+Notably, supply expansions and contractions --- actions performed by rebase protocol to adjust total supply, affect token amount universally: all wallet balances, treasury, and accounts reserved for smart contracts. Last introduces a significant consideration for cross-chain bridges design, since it generally relies on escrow account where dispatched tokens would remain locked on the source chain.
+
+Assuming that bridge protocol will mint wrapped representation of original token on the target chain, we can draw a corresponding conclusion that \textit{without changes to original bridging protocol wrapped token supply will eventually became out of sync with rebase-driven native token supply.} The inconsistency between amounts of native and wrapped tokens would then lead to non-deterministic behaviour. Most obvious of them --- \textit{translation conflicts when transferring a rebase tokens back to the source chain.} This would also expose both chains to novel attack vectors that would not otherwise be possible.
+
+\subsection{Proposal statement}
+
+The purpose of this paper is to firstly shed light on the implications that rebase-driven supply has on cross-chain interoperability protocols. We will then go through key considerations that should be taken while designing a bridge for transferring rebase tokens. The Paper will center around the protocol proposal for the bridge connecting EVM-compatible source chain and Substrate-based parachain on the Polkadot network. However, proposed solution should effectively work on chains of other families as well. Finally, we will finish paper with follow-up questions and ideas for future exploration.
 
 \section{Protocol}
 
