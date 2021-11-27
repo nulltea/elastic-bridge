@@ -30,11 +30,13 @@ Frameworks like Parity's Substrate\footnote{\url{https://docs.substrate.io}} and
 
 Effectively improved on scalability by shading on-chain data and parallelising transaction execution, we encountered new challenges with cross-chain interoperability. Many newborn ecosystems, all with unique features and value propositions, found themselves near of Tower of Babel\footnote{Myth} --- unable to communicate and effectively cooperate to provide meaningful services together.
 
-The natural reaction was a development of cross-chain bridges --- protocols that allow two (or more) exogenous chains to share state by the means of transaction passing. We have seen various implementations of these protocols ranging from trusted federations to truly trust-less decentralized Relayed SPV solutions like the IBC Protocol \cite{goes2020ibc}.
+The natural reaction was a development of cross-chain bridges --- protocols that allow two (or more) exogenous chains to share state by the means of inter-chain transaction passing. We have seen various implementations of these protocols ranging from trusted federations to truly trust-less decentralized Relayed SPV solutions like the IBC Protocol \cite{goes2020ibc}.
 
 \subsection{Rebase Tokens}
 
-Meanwhile, breakthroughs were made on the cryptocurrencies side as well. Rebasing --- a novel technique applied for synthetic commodities, has proved its efficiency in tackling high volatility by algorithmically rebalancing tokens supply.
+Meanwhile, cryptocurrencies --- the original use case of the Distributed Ledger Technology (DLT), also do not show any signs of innovation slowdown. Projects like Stellar \cite{mazieres2016stellar} commit to building a foundation for transferring digital currency to fiat money across borders. Controversial privacy-oriented currencies like Monero \cite{saberhagen2013monero} allow completely untraceable payments. Finally, fiat-pegged tokens like Tether \cite{tether2016} and multi-collateralized stablecoins like MakerDAO's Dai \cite{makerdao2020dai} has been one of many attempts to tackle price-volatility --- issue often synonymous with digital currencies.
+
+Rebasing --- a novel technique applied for synthetic commodities for achieving practical price stability by algorithmically adjusting circulating amount of tokens, thus translating price-volatility into supply-volatility.
 
 \section{Protocol}
 
