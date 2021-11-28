@@ -7,6 +7,17 @@
 \usepackage{amsmath}
 \usepackage{graphicx}
 \usepackage[colorlinks=true]{hyperref}
+\usepackage{footnote}
+\usepackage{footmisc}
+\usepackage{enumerate}
+
+\newcommand{\astfootnote}[1]{%
+	\let\oldthefootnote=\thefootnote%
+	\setcounter{footnote}{0}%
+	\renewcommand{\thefootnote}{\fnsymbol{footnote}}%
+	\footnote{#1}%
+	\let\thefootnote=\oldthefootnote%
+}
 
 \title{ElasticBridge: Trust-less Cross-Chain Bridge for Transferring Rebase Tokens}
 \author{Timothy Yalugin\\timauthx@gmail.com}
@@ -39,19 +50,64 @@ Meanwhile, cryptocurrencies --- the original use case of the Distributed Ledger 
 
 Rebasing --- a novel technique applied for synthetic commodities for achieving practical price stability by algorithmically adjusting circulating tokens amount, thus translating price-volatility into supply-volatility. Rebase tokens (or price-elastic tokens) demonstrated low correlation not only with stocks, fiat currencies, and precious metals, but with other cryptocurrencies, most notably with Bitcoin.
 
-While the low correlation aspect attracts investors seeking to diversify their portfolios, the unique volatility pattern of rebase currencies makes them valuable building block\footnote{Claim from Ampleforth documentation. \url{https://ampleforth.org/economics}} for DeFi as well. For example, the longest-running algorithmic stablecoins based on rebasing --- Ampleforth \cite{kuo2019ampleforth} constructs its protocol with dependence on fast actors who benefit from short-term trades. By leveraging time windows after rebasing to make lucrative trades, these actors propagate adjustments of supply made by protocol back into the price.
+While the low correlation aspect attracts investors seeking to diversify their portfolios, the unique volatility pattern of rebase currencies makes them valuable building block\footnote{Claim from Ampleforth documentation. \url{https://ampleforth.org/economics}} for DeFi as well. For example, the longest-running algorithmic stablecoins based on rebasing --- Ampleforth \cite{kuo2019ampleforth} constructs its protocol with dependence on fast actors who benefit from short-term trades. By leveraging certain windows in time during rebase to make lucrative trades, these actors propagate adjustments of supply made by protocol back into the price.
 
 \subsection{Outlined challenges}
 
 Notably, supply expansions and contractions --- actions performed by rebase protocol to adjust total supply, affect token amount universally: all wallet balances, treasury, and accounts reserved for smart contracts. Last introduces a significant consideration for cross-chain bridges design since it generally relies on escrow account where dispatched tokens would remain locked on the source chain.
 
-Assuming that bridge protocol will mint wrapped representation of original token on the target chain, we can draw a corresponding conclusion that \textit{without changes to original bridging protocol wrapped token supply will eventually become out of sync with rebase-driven native token supply.} The inconsistency between amounts of native and wrapped tokens would then lead to non-deterministic behavior. Most obvious --- \textit{translation conflicts when transferring rebase tokens back to the source chain.} This would also expose both chains to novel attack vectors that would not otherwise be possible.
+Assuming that bridge protocol will mint wrapped representation of original token on the target chain, we can draw a corresponding conclusion that \textit{without changes to original bridging protocol wrapped token supply will eventually become out of sync with rebase-driven native token supply.} The inconsistency between amounts of native and wrapped tokens would then lead to non-deterministic behavior, mostly obvious --- \textit{translation conflicts when transferring rebase tokens back to the source chain.} This would also expose both chains to novel attack vectors that would not otherwise be possible.
 
 \subsection{Proposal statement}
 
 The purpose of this paper is to firstly shed light on the implications that elastic supply of dispatchable tokens would have on cross-chain interoperability protocols applied to them. We will then go through key considerations that should be taken into account while designing a bridge for transferring such tokens. The Paper will center around the protocol proposal for the bridge connecting EVM-compatible source chain and Substrate-based parachain on the Polkadot network. However, the proposed solution should effectively work on chains of other origins as well. Finally, we will finish current paper with follow-up questions and ideas for future exploration.
 
 \section{Design consideration}
+
+General method by which cross-chain bridges operate can be described as \textbf{lock-and-mint/burn-and-release\footnote{\url{https://chainbridge.chainsafe.io/live-evm-bridge}}}. Bridge would lock the tokens in the source chain (SC) and mint a wrapped representation onto receiver chain (RC). Reverse process would then be to burn wrapped tokens from RC and unlock original tokens on SC. The described approach allows to \textit{preserve circulating token supply by distributing it across both chains}. This property will also propagate with each following transfer in N-Way bridge, where tokens can be passed downwards to another ``satellite'' chains without going back to the source chain, as long as contract of burning wrapped tokens on leaving ``satellite'' chains will be kept.
+
+The given overview of the conventional bridging protocol allows us to distinguish two states, where we should consider exceptions when such protocol is applied to rebase tokens. These states are 1) forward movement from source chain to target chain 2) backward movement back to source chain. In the upcoming section we will go though each of them.
+
+\subsection{Forward bridge movement}
+
+Native tokens (NT) locked on the source chain escrow account would act as collateral for newly minted wrapped tokens (WT) on the receiver chain. Since WT are pegged by NT on 1:1 basis their price ratio will initially have the same relation as well. We are now able to add new assumptions to the table:
+
+\begin{enumerate}
+	\item As long as WT are pegged with same amount of NT the price ratio will remain unchanged
+	\item If after rebasing on SC there will not be an equal adjustment of NT supply, then the amount of WT become out of sync with NT so as their prices
+	\item If supply adjustments made by rebase protocol will propagate to RC, then the amount of NT and WT will remain equal so as their price\astfootnote{with rebase reaction lag}
+\end{enumerate}
+
+Basing on defined assumptions we can immediately outline first and foremost consideration that directly translates to protocol scope requirement --- \textit{in order to preserve price and supply synchrony it is required to ensure that rebasing rules of source chain are followed on all receiver chains.}
+
+Reasons why price-ratio and supply-ratio of wrapped and native tokens must remain equal will be covered in following sections. For now please assume that \textit{since wrapped token is by definition a direct representation of original token we generally want their price to be synced so as the supply.}
+
+We also need to consider possible negative implications of locking tokens to the rebase process itself. Consider the formula for calculating supply adjustment coefficient used in Ampleforth's Supply Policy Contract \cite{kuo2019ampleforth} when current Ample\footnote{Ampleforth protocol native token} price is outside the threshold of the target price:
+\[supplyDelta = \frac{(currentPrice-targetPrice)}{targetPrice}\ast\\totalSupply
+
+Since formula takes into account exactly the total supply, which does include amount of tokens locked in the bridge's escrow account, we can in fact justify that dispatch of rebase tokens from their source chain is possible. The opposite would be true for circulating supply which will decrease by the number of locked tokens.
+
+\subsection{Backward bridge movement}
+
+By the means of locking dispatchable tokens in an internal escrow account, bridge protocol ensures its ability to redeem the required amount of tokens back without changing total supply when minting new ones. The obvious problem with rebase currencies bridging is the fact that since the escrow account balance is a variable out of the bridge's full control, we cannot guarantee the fulfillment of the redeeming contract. We will address this issue as \textit{translation conflict} later on.
+
+Since translation conflict is type of non-deterministic behaviour that is caused by the deviations occurring between rebase-driven native token supply and relatively static\footnote{Wrapped token supply is driven only by bridging protocol} wrapped token supply, we can re-use previously defined assumptions to conclude --- \textit{similarly how the price of wrapped tokens relies on the collateral supply synchrony, the bridge protocol rely on it to fulfil its redeeming contract and thus it must be preserved.}
+
+\subsection{Price-Supply equilibrium}
+
+The core process of rebase protocol is to actively seek a price-supply equilibrium --- state when current token supply constitutes into the target price through exchange-rate deviations caused by fast actors. This contract is what defines rebase currencies value to potential investors, traders, and other type of DeFi actors. Assuming so, the case with wrapped token that represents rebase currency but do not comply with its supply adjustment rules would probably make no meaningful sense for all actors besides those that are either malicious or driven by greed with similar aftermath.
+
+We can foresee a potential attack vector derived from the native-to-wrapped token supply deviations caused in chains that lack rebasing support: \textit{malicious fast actor can transfer to non-rebasing chain tokens, bought during expansion phases when price is lower, in order to redeem them after contraction phase when price is higher.} This gives malicious actor a clear advantage over honest actors since account balance on non-rebasing chain will not contract whereas all source chain balances will.
+
+\subsection{Archiving supply synchrony}
+
+Let us now define possible approaches of structuring multi-chain version of rebase protocol. Consider following ones that will be outlined by current paper:
+
+\begin{enumerate}[A.]
+	\item Rely on source chain to govern rebase calculation and then on protocol to propagate adjustments to each satellite chains
+	\item Let each satellite chain govern its own wrapped token supply individually, yet with respect to source chain defined rules\astfootnote{Multi-chain governance of rebase protocol is also possible but will be outside of the scope of this paper}
+\end{enumerate}
+
 
 \section{Protocol implementation}
 
