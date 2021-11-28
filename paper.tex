@@ -39,9 +39,9 @@ Meanwhile, cryptocurrencies --- the original use case of the Distributed Ledger 
 
 Rebasing --- a novel technique applied for synthetic commodities for achieving practical price stability by algorithmically adjusting circulating tokens amount, thus translating price-volatility into supply-volatility. Rebase tokens (or price-elastic tokens) demonstrated low correlation not only with stocks, fiat currencies, and precious metals, but with other cryptocurrencies, most notably with Bitcoin.
 
-While the low correlation aspect attracts investors seeking to diversify their portfolios, the unique volatility pattern of rebase currencies makes them valuable building block\footnote{Claim from Ampleforth documentation. \url{https://ampleforth.org/economics}} for DeFi as well. For example, the longest-running algorithmic stablecoins based rebasing --- Ampleforth \cite{kuo2019ampleforth} constructs its protocol with dependence on fast actors who benefit from short-term trades. By leveraging time windows after rebasing to make lucrative trades, these actors propagate adjustments of supply made by protocol back into the price.
+While the low correlation aspect attracts investors seeking to diversify their portfolios, the unique volatility pattern of rebase currencies makes them valuable building block\footnote{Claim from Ampleforth documentation. \url{https://ampleforth.org/economics}} for DeFi as well. For example, the longest-running algorithmic stablecoins based on rebasing --- Ampleforth \cite{kuo2019ampleforth} constructs its protocol with dependence on fast actors who benefit from short-term trades. By leveraging time windows after rebasing to make lucrative trades, these actors propagate adjustments of supply made by protocol back into the price.
 
-\subsection{Considerations taken}
+\subsection{Outlined challenges}
 
 Notably, supply expansions and contractions --- actions performed by rebase protocol to adjust total supply, affect token amount universally: all wallet balances, treasury, and accounts reserved for smart contracts. Last introduces a significant consideration for cross-chain bridges design since it generally relies on escrow account where dispatched tokens would remain locked on the source chain.
 
@@ -51,7 +51,13 @@ Assuming that bridge protocol will mint wrapped representation of original token
 
 The purpose of this paper is to firstly shed light on the implications that elastic supply of dispatchable tokens would have on cross-chain interoperability protocols applied to them. We will then go through key considerations that should be taken into account while designing a bridge for transferring such tokens. The Paper will center around the protocol proposal for the bridge connecting EVM-compatible source chain and Substrate-based parachain on the Polkadot network. However, the proposed solution should effectively work on chains of other origins as well. Finally, we will finish current paper with follow-up questions and ideas for future exploration.
 
-\section{Protocol}
+\section{Design consideration}
+
+\section{Protocol implementation}
+
+\section{Conclusion}
+
+\subsection{Follow-up questions}
 
 \bibliographystyle{ieeetr}
 \bibliography{references}
