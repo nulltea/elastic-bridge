@@ -8,16 +8,7 @@
 \usepackage{graphicx}
 \usepackage[colorlinks=true]{hyperref}
 \usepackage{footnote}
-\usepackage{footmisc}
 \usepackage{enumerate}
-
-\newcommand{\astfootnote}[1]{%
-	\let\oldthefootnote=\thefootnote%
-	\setcounter{footnote}{0}%
-	\renewcommand{\thefootnote}{\fnsymbol{footnote}}%
-	\footnote{#1}%
-	\let\thefootnote=\oldthefootnote%
-}
 
 \title{ElasticBridge: Trust-less Cross-Chain Bridge for Transferring Rebase Tokens}
 \author{Timothy Yalugin\\timauthx@gmail.com}
@@ -75,7 +66,7 @@ Native tokens (NT) locked on the source chain escrow account would act as collat
 \begin{enumerate}
 	\item As long as WT are pegged with same amount of NT the price ratio will remain unchanged
 	\item If after rebasing on SC there will not be an equal adjustment of NT supply, then the amount of WT become out of sync with NT so as their prices
-	\item If supply adjustments made by rebase protocol will propagate to RC, then the amount of NT and WT will remain equal so as their price\astfootnote{with rebase reaction lag}
+	\item If supply adjustments made by rebase protocol will propagate to RC, then the amount of NT and WT will remain equal so as their price\footnote{with rebase reaction lag}
 \end{enumerate}
 
 Basing on defined assumptions we can immediately outline first and foremost consideration that directly translates to protocol scope requirement --- \textit{in order to preserve price and supply synchrony it is required to ensure that rebasing rules of source chain are followed on all receiver chains.}
@@ -83,7 +74,7 @@ Basing on defined assumptions we can immediately outline first and foremost cons
 Reasons why price-ratio and supply-ratio of wrapped and native tokens must remain equal will be covered in following sections. For now please assume that \textit{since wrapped token is by definition a direct representation of original token we generally want their price to be synced so as the supply.}
 
 We also need to consider possible negative implications of locking tokens to the rebase process itself. Consider the formula for calculating supply adjustment coefficient used in Ampleforth's Supply Policy Contract \cite{kuo2019ampleforth} when current Ample\footnote{Ampleforth protocol native token} price is outside the threshold of the target price:
-\[supplyDelta = \frac{(currentPrice-targetPrice)}{targetPrice}\ast\\totalSupply
+\[supplyDelta = \frac{currentPrice-targetPrice}{targetPrice}\ast\\totalSupply\]
 
 Since formula takes into account exactly the total supply, which does include amount of tokens locked in the bridge's escrow account, we can in fact justify that dispatch of rebase tokens from their source chain is possible. The opposite would be true for circulating supply which will decrease by the number of locked tokens.
 
@@ -101,12 +92,19 @@ We can foresee a potential attack vector derived from the native-to-wrapped toke
 
 \subsection{Archiving supply synchrony}
 
-Let us now define possible approaches of structuring multi-chain version of rebase protocol. Consider following ones that will be outlined by current paper:
+Let us now define possible approaches of structuring multi-chain version of rebase protocol. These are the ones that will be outlined by the current paper:
 
-\begin{enumerate}[A.]
+\begin{enumerate}[a.]
 	\item Rely on source chain to govern rebase calculation and then on protocol to propagate adjustments to each satellite chains
-	\item Let each satellite chain govern its own wrapped token supply individually, yet with respect to source chain defined rules\astfootnote{Multi-chain governance of rebase protocol is also possible but will be outside of the scope of this paper}
+	\item Let each satellite chain govern its own wrapped token supply individually, yet with respect to source chain defined rules\footnote{Multi-chain governance of rebase protocol is also possible but will be outside of the scope of this paper}
 \end{enumerate}
+
+First approach implies to having a single relay-chain that by knowing total token supply both domestically and outside could effectively rebase on it for achieving price-supply equilibrium universally by broadcasting supply delta to all satellite chains. From the perspective of the relay-chain all satellite chains are light clients with certain account balance that must be equally rebased.
+
+Second approach attempts to bring more decentralization to rebase governance by partitioning supply adjustments across all multi-chain participants. Although at the first glance this method does seem more advantageous, it has some caveats we have to consider first. Assuming that each individual chain will track its local total supply to perform rebase calculation, bridge by minting new tokens will introduce an additional factor that is not necessarily considered by the rebase protocol. We can of course argue that since bridge being a de facto sole-producer of such tokens on satellite chains it would also act as a rebase governor, but the described issue goes further into economical scope --- \textit{addition or reduction of tokens by means of minting or burning would most certainly alter the price-supply equilibrium established since the last rebase recurrence.} Furthermore, since we cannot deterministically assume that supply information will be equally propagated to price by each individual group of fast actors trading different wrapped token representations, there is a prominent possibility that \textit{as soon as the underlying prices diverge to the extent of target price threshold, supply deviation will most certainly happen too.}
+
+Presumably, it still is possible to get over the described issues with some novel layer zero consensus mechanism, yet considering that use of central relay-chain for multi-chain interoperability has proved its robustness and security, the second approach will probably be an overhead.
+
 
 
 \section{Protocol implementation}
