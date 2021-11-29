@@ -10,7 +10,7 @@
 \usepackage{footnote}
 \usepackage{enumerate}
 
-\title{ElasticBridge: Trust-less Cross-Chain Bridge for Transferring Rebase Tokens}
+\title{ElasticBridge: Trustless Cross-Chain Bridge for Transferring Rebase Tokens}
 \author{Timothy Yalugin\\timauthx@gmail.com}
 
 \begin{document}
@@ -18,7 +18,7 @@
 
 \begin{abstract}
 
-This paper proposes an approach for secure and robust bridging of ERC-20 compatible rebase tokens between EVM-based source chain and Substrate-based parachain deployed on Polkadot network.
+This paper proposes an approach for secure and robust bridging of ERC-20 compatible rebase tokens between EVM-based source chain and WASM-based receiver chain deployed on Polkadot network.
 
 \end{abstract}
 
@@ -82,7 +82,7 @@ Since formula takes into account exactly the total supply, which does include am
 
 By the means of locking dispatchable tokens in an internal escrow account, bridge protocol ensures its ability to redeem the required amount of tokens back without changing total supply when minting new ones. The obvious problem with rebase currencies bridging is the fact that since the escrow account balance is a variable out of the bridge's full control, we cannot guarantee the fulfillment of the redeeming contract. We will address this issue as \textit{translation conflict} later on.
 
-Since translation conflict is type of non-deterministic behaviour that is caused by the deviations occurring between rebase-driven native token supply and relatively static\footnote{Wrapped token supply is driven only by bridging protocol} wrapped token supply, we can re-use previously defined assumptions to conclude --- \textit{similarly how the price of wrapped tokens relies on the collateral supply synchrony, the bridge protocol rely on it to fulfil its redeeming contract and thus it must be preserved.}
+Since translation conflict is type of non-deterministic behaviour that is caused by the deviations occurring between rebase-driven native token supply and relatively static\footnote{Wrapped token supply is driven only by bridging protocol} wrapped token supply, we can re-use previously defined assumptions to conclude --- \textit{similarly how the price of wrapped tokens relies on the collateral supply synchrony, the bridge protocol rely on it to fulfill its redeeming contract and thus it must be preserved.}
 
 \subsection{Price-Supply equilibrium}
 
@@ -105,9 +105,18 @@ Second approach attempts to bring more decentralization to rebase governance by 
 
 Presumably, it still is possible to get over the described issues with some novel layer zero consensus mechanism, yet considering that use of central relay-chain for multi-chain interoperability has proved its robustness and security, the second approach will probably be an overhead.
 
-
-
 \section{Protocol implementation}
+
+ElasticBridge --- is a proposed implementation of cross-chain bridge connecting EVM and WASM chains for exchanging rebase tokens in a decentrilized, secure and trustless fashion. The base chain that holds a ERC-20 token Contract is deployed on Ethermint network, that EVM-compatible, Proof-of-Stake and build with Cosmos SDK framework. On the other side of the bridge we got application-specific chain with WASM-based runtime powered by Substrate framework and deployed on Kusama\footnote{Biggest test network on Polkadot ecosystem, that is oriented on rapid and radical innovation. \url{https://kusama.network}} network.
+
+Building a robust, secure, and trustless bridge requires a decentralized governance structures implemented through solid technology solutions along with a well-balanced incentive model based on an elaborate game theory. Thus, similarly to building a blockchain from scratch, bridging a few of them without any foundation is an immensely difficult task. That is why ElasticBridge will rely on existing solutions.
+
+\subsection{Toolchain}
+
+At the time of writing, there two prominent candidates for a EVM-to-Substrate bridge development frameworks to consider: ChainBridge\footnote{\url{https://chainbridge.chainsafe.io}} and SnowBridge\footnote{\url{https://snowbridge-docs.snowfork.com}}. Although current version of the ChainBridge operates under a trusted federation model and the SnowBridge is claimed to be trustless SPV solutions, the more likely choice out of two would still be ChainBridge, which according to ChainSafe, the developers behind the project, is a planned to move to the trustless model as well. The developers of Ampleforth currency made a similar decision for their AMPL Bridge, which is powered by Meter Passport\footnote{N-Way bridge that is build with ChainBridge framework. \url{https://docs.meter.io/passport}}. 
+
+Additionally the fact that Ethermint is a part of Cosmos ecosystem allows us use to utilize IBC protocol as well. Projects that implemented IBC for Substrate are QuantumTunnel\footnote{\url{https://github.com/ChorusOne/quantum-tunnel}} and \texttt{substrate-ibc} pallet\footnote{\url{https://github.com/octopus-network/substrate-ibc}}.
+
 
 \section{Conclusion}
 
