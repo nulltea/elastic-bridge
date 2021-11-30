@@ -119,9 +119,19 @@ By leveraging the fact that Ethermint is a part of Cosmos ecosystem it is also p
 
 \subsection{Specification}
 
-ElasticBridge relies on IBC protocol to trust-lessly relay rebase token transfers\footnote{ICS20} in the multi-chain network with unknown topology. Its own role in this kind of mutual relationship is to expose Substate-based nodes containing ElasticBridge protocol runtime. These nodes together form an intermediary blockchain acting equally as service providing Parachain on Kusama network and Peg Zone between the Ethermint and other Kusama or Polkadot based Parachains. Combined security guarantees of by both sender chain's (Terndermint BFT) and receiver chain's (BABE + GRANDPA) consensus mechanism makes ElasticBridge protocol robust and allow preserve the ability to provide deterministic finality on top.
+ElasticBridge relies on IBC protocol to trust-lessly relay rebase token transfers\footnote{ICS20} in the multi-chain network with unknown topology. Its own role in this kind of mutual relationship is to expose Substate-based nodes containing ElasticBridge protocol runtime. These nodes together form an intermediary blockchain acting equally as service-providing Parachain on Kusama network and Peg Zone between the Ethermint and other Kusama or Polkadot based Parachains. Combined security guarantees of both sender chain's (Terndermint BFT) and receiver chain's (BABE + GRANDPA) consensus mechanism is what makes ElasticBridge protocol so robust and preserves its ability to provide deterministic finality for cross-chain transactions.
 
+What differentiates ElasticBridge from similar Relayed SPV solutions, is a specific mechanism implemented in its nodes that ensure systematic, provable, and atomic supply rebasing propagation. The concrete implementation of such mechanism may vary depending on how Supply Policy Contract (SPC) is implemented on the base chain. This paper foresees following variations:
 
+\begin{itemize}%[leftmargin=1em]
+  \renewcommand{\labelitemi}{$\Rightarrow$}
+	\item In case the existence of satellite chains is recognised by SPC and it will systematic transact a report shortly after supply delta is calculated, then ElasticBridge on-chain runtime will need to implement extrinsic for handling such reporting transaction
+	\item Otherwise, all or particular ElasticBridge nodes will have an off-chain worker that will periodically scan base chain for the events indicating occurred rebasing and then determine new supply delta 
+\end{itemize}
+
+Regardless of what requirement, Substrate framework provides programmable primitives\footnote{Off-chain workers} to effectively support both and be able to perform fork-less\footnote{WASM runtime} upgrades in case for example base protocol will have some breaking changes.
+
+// Perform rebase on satellite chain and propagate to the upstream.
 
 \section{Conclusion}
 
