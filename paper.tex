@@ -18,7 +18,7 @@
 
 \begin{abstract}
 
-This paper proposes an approach for secure and robust bridging of ERC-20 compatible rebase tokens between EVM-based source chain and WASM-based receiver chain deployed on Polkadot network.
+This paper proposes a practical approach for secure and robust bridging of ERC-20 compatible rebase tokens between EVM-based source chain and WASM-based receiver chain via the IBC interoperability protocol.
 
 \end{abstract}
 
@@ -129,13 +129,26 @@ What differentiates ElasticBridge from similar Relayed SPV solutions, is a speci
 	\item Otherwise, all or particular ElasticBridge nodes will have an off-chain worker that will periodically scan base chain for the events indicating occurred rebasing and then determine new supply delta 
 \end{itemize}
 
-Regardless of what requirement, Substrate framework provides programmable primitives\footnote{Off-chain workers} to effectively support both and be able to perform fork-less\footnote{WASM runtime} upgrades in case for example base protocol will have some breaking changes.
+Regardless of the circumstances, ElasticBridge runtime by mimicking supply expansion and contraction of the base chain will then adjust wrapped token supply proportionally to discovered delta coefficient. Most likely, to avoid generating a transaction for each wallet, it will only update internal denomination that is used for representing rebase token balances. Lastly, it will propagate same rebase transaction further to the upstream to universally synchronize supply across all participating chains.
 
-// Perform rebase on satellite chain and propagate to the upstream.
+On the practical side, programmable primitives\footnote{Off-chain workers} provided by the Substrate framework is more than enough to effectively support all mentioned requirements. For example, its off-chain workers feature allows for scheduling and running non-deterministic and CPU-intensive processes that cannot otherwise be done on-chain: cross-chain transactions, RPC invocations, state indexing and more. Additionally, Substrate's fork-less\footnote{WASM runtime} upgrades scheme allows rapidly adapting to any possible changes introduced by the external rebase protocol later on.
 
 \section{Conclusion}
 
-\subsection{Follow-up questions}
+Rebase currencies are a promising and refreshing addition to the existing DeFi ecosystem. While the market cap of such a novel synthetic commodities is driven both by the their underlying price and supply signals, its proportional value to other more established cryptocurrencies is left to be seen. But the fact that prominent projects like Ampleforth are actively pushing this idea further, makes contributions to rebase token cross-chain interoperability increasingly valuable for the crypto space as a whole.
+
+Design decisions for proposed ElasticBridge protocol are driven by the close study of previously done work and the desire to both extend platforms adoption and diversify technological implementation. In the core of current solution is IBC protocol --- blockchain-agnostic interoperability protocol that while still being mostly limited to Cosmos ecosystem, is now slowly making its way to other big platforms like Ethereum, Polkadot, and Near. The goal of ElasticBridge is to support this movement with the help of other powerful technology like Substrate and Ethermint.
+
+\subsection{Open Questions}
+
+\begin{itemize}
+	\item Can the fact that rebase calculation would be done on a single chain introduce single point of failure in the multi-chain setup?
+	\item How can one benefit from parallelizing rebase calculation on all chains if this would be possible? Same for multi-chain governance of rebasing rules and parameters
+\end{itemize}
+
+\section{Acknowledgment}
+
+Many thanks to Blockchain Solutions team at ChainSafe for challenging me with such an intriguing and enlightening task.
 
 \bibliographystyle{ieeetr}
 \bibliography{references}
